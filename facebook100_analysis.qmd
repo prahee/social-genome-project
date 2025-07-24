@@ -1,0 +1,577 @@
+---
+title: 'The "Social Genome" Project:
+A Quantitative Comparison of University Social Structures'
+author: "Rahee Sikder"
+date: '2025-06-02'
+format:
+  pdf:
+    toc: true
+editor: visual
+---
+
+## Abstract
+
+Online social networking sites (SNSs) have become integral to daily life and offer unprecedented insights into human connection. This project analyzes the Facebook networks of Caltech, Cornell, and Dartmouth College from 2005, leveraging the Facebook100 dataset. We introduce the concept of a "social genome"—a quantitative signature for each university derived from Exponential-Family Random Graph Model (ERGM) parameters. By fitting ERGMs and examining network metrics, we test hypotheses about how institutional characteristics like academic focus, size, and geographic isolation manifest in their social structures. The results reveal distinct "social genomes": Caltech’s network is defined by strong homophily within its residential houses and academic majors; Cornell’s by a sprawling, cohort-based structure driven by class year; and Dartmouth’s by its intense residential and Greek life. Further model validation for Caltech and sensitivity analyses for Dartmouth confirm the robustness of these findings. This research extends prior work by quantifying institutional variations and offers a replicable framework for understanding the unique social personalities that define campus life.
+
+## 1. Introduction
+
+### 1.1 Background: Social Networks on Campus
+
+Since their inception, online social networking sites (SNSs) have become deeply integrated into daily life, providing researchers with an unprecedented window into the structure of human connection. Facebook, for example, grew from a campus-specific tool to a global phenomenon, and its early data offers a "digital fossil" of social organization. Although online networks are an imperfect mirror of offline relationships, they offer a valuable lens for examining core sociological dynamics such as homophily (the tendency for individuals to associate with similar others), triadic closure (the likelihood that two people with a mutual friend will themselves become connected), and social capital (the value embedded in an individual’s network of relationships).
+
+This project extends the foundational work of Traud, Mucha, and Porter (2012), who conducted a broad comparative analysis of the Facebook networks at 100 U.S. universities. Their study revealed that while social structures were heavily influenced by attributes like class year and residence, the relative importance of these factors varied significantly across institutions. They noted a major distinction between microscopic drivers of friendship (dyad-level) and macroscopic organization (community-level), finding, for example, that a common high school was a strong predictor of a friendship tie but rarely a dominant factor in the university's overall community structure.
+
+### 1.2 The "Social Genome" Concept
+
+The present project takes the observation of institutional variation by Traud et al. (2012) as its central premise. We propose the concept of a "social genome": a quantitative signature for each university derived from the parameters of an Exponential-Family Random Graph Model (ERGM). By fitting a consistent ERGM to the networks of three distinct universities (Caltech, Cornell, and Dartmouth) this project aims to model and quantify the unique "personality" of each institution's social structure.
+
+### 1.3 Initial Hypotheses
+
+Based on the "social genome" framework, we propose distinct, testable hypotheses for each university that reflect their unique size, focus, and environment.
+
+Caltech, dubbed "The Focused Silo," is expected to exhibit strong positive coefficients for academic discipline (nodematch('major')) and residential house (nodematch('residence')), reflecting its tightly organized social life around these silos.
+
+Cornell, characterized as "The Metropolis," is anticipated to show a strong organizing effect of class year (nodematch('year')), with weaker influences from residence and major indicative of its large, diverse, and diffusely connected nature.
+
+Dartmouth, "The Social Bubble," is hypothesized to have a dense, highly clustered network driven by its geographic isolation and robust residential and Greek life, manifesting as a strong nodematch('residence') coefficient and a less negative edges coefficient, suggesting a higher baseline density of connections.
+
+### 1.4 Motivation and Practical Implications 
+
+This research moves beyond a theoretical exercise in network science to address a critical, practical challenge in higher education: ensuring the alignment between a student and their college's community is no longer left to chance. The underlying motivation is the recognition that a student's ability to flourish is deeply tied to their sense of belonging, a factor that transcends academic offerings and extends to the core values and social structure of an institution. As research by Hommes et al. (2012) demonstrates, the structure of student social networks has a direct and measurable impact on academic performance and overall university experience. By quantifying a university's "social personality" into a tangible "social genome," our framework provides a data-driven tool with significant implications. For university administrators, it offers a method to engineer better student integration through structured housing assignments, to target mental health resources tailored to the specific social pressures of their unique environment, and to empirically measure the impact of student life policies. Simultaneously, this research enables students and families to make more thoughtful, well-rounded choices by encouraging them to look past conventional indicators like rankings and prestige, and instead select a college whose social atmosphere genuinely fits their individual and academic priorities. Ultimately, this work provides a method to understand and act upon the crucial "fit" between a student and their campus community.
+
+## 2. Literature Review
+
+This project is situated at the intersection of three domains of research: the fundamental principles of social network formation, the empirical analysis of social life in university settings, and the statistical modeling of complex network data. This review synthesizes key findings from each area to provide the theoretical and methodological foundation for our "Social Genome" concept.
+
+### 2.1 Social Network Formation and Homophily
+
+The structure of any social network is shaped by a set of organizing principles that govern why and how individuals form connections. Among the most powerful and well-documented of these principles is homophily: the tendency for individuals to associate with similar others. In their canonical review, McPherson, Smith-Lovin, and Cook (2001) establish that this "birds of a feather" phenomenon is a fundamental mechanism driving the formation of friendships and acquaintanceships. Homophily operates across a vast range of attributes, including age, gender, beliefs, and, crucially for our study, organizational affiliations such as one's university, major, and residence. This principle explains why friendship ties are not formed at random; instead, they are heavily constrained by shared social contexts, which create opportunities for interaction among similar individuals. Our project uses this foundational concept as its starting point, operationalizing these shared attributes as the core "genes" in each university's social genome.
+
+### 2.2 Network Analysis of College Life
+
+The College campus provides a uniquely bounded and compelling environment for studying social network dynamics. The foundational work for our project is the broad comparative analysis of the Facebook100 dataset by Traud, Mucha, and Porter (2012). Their research was pivotal in demonstrating that while students universally tend to form ties based on shared characteristics like class year and residence, the relative importance of these factors varies significantly from one institution to another. They established that a university is not a generic social space but an institution with a distinct social signature. Our project extends this finding by seeking to formalize and quantify this observed variation. Other research using this dataset has further underscored its value. For instance, Lewis, Gonzalez, and Kaufman (2012) used the Facebook100 data to explore the interplay of social selection and peer influence, showing how friendship networks shape, and are shaped by, cultural tastes.
+
+### 2.3 Modeling Social Networks with Exponential-Family Random Graph Models (ERGMs)
+
+To move beyond describing network patterns to modeling the underlying processes that generate them, we employ Exponential-Family Random Graph Models (ERGMs). As detailed by Lusher, Koskinen, and Robins (2013), ERGMs represent a statistical framework capable of handling the complex dependencies inherent in network data, such as the tendency for friends of a friend to become friends (triadic closure). Unlike simpler models, ERGMs allow us to simultaneously test hypotheses about the relative strength of multiple social forces—such as homophily on various attributes—that contribute to the overall network structure.
+
+The application of ERGMs to university social networks has yielded powerful insights. A landmark study by Wimmer and Lewis (2010) used ERGMs to analyze a friendship network in a racially diverse university dorm. Their work masterfully demonstrated how ERGMs can disentangle multiple, overlapping mechanisms of tie formation, showing how shared activities and simple propinquity operated alongside and sometimes overshadowed racial homophily. Their study serves as a methodological blueprint for our project, providing a strong precedent for using ERGMs to model the competing social forces that constitute a university's unique "personality." By adopting this framework, we can build a formal model of each university's social genome, quantifying the specific combination of forces that makes each campus a distinct social world.
+
+## 3. Data and Methods
+
+This study employs a multi-step analytical approach to quantify and compare the social networks of three U.S. universities. We first describe the unique dataset used for this analysis and its limitations, then outline the sequence of analytical strategies applied to test our hypotheses.
+
+### 3.1 The Facebook100 Dataset
+
+We are using the The Facebook100 dataset to understand the personalities of each higher educational institutes. The Facebook100 dataset represents a historical snapshot because it captures the complete Facebook friendship networks of 100 U.S. universities as of September 2005. The students at a single university are the nodes, identified by unique anonymized IDs. The connections, or edges, are undirected and unweighted friendship ties, representing reciprocal Facebook friendships confirmed exclusively within that university's network.
+
+This strict isolation makes each network a distinct graph, where its structure, size, and attribute distributions directly reflect the unique social environment of that institution (e.g., Caltech's small, tech-focused network versus Cornell's large, diverse one).
+
+This independence is important, as it allows for comparative analysis using a consistent Exponential Random Graph Model (ERGM), where any observed structural differences can be confidently attributed to institutional characteristics rather than inter-network dependencies.
+
+Beyond the network structure, the dataset also provides several anonymized, self-reported user attributes that will be central to our analysis: gender, class year, major (as a numerical identifier), residence (dormitory, house, etc., as a numerical identifier), and high school (as a numerical identifier). The network data itself consistently consists of undirected, unweighted friendship ties, where a connection signifies a reciprocal friendship.
+
+#### 3.1.1 Background Context of the data:
+
+The time period when the data were collected is critical for understanding early social media dynamics, as Facebook, launched in 2004 by Mark Zuckerberg at Harvard, was then exclusively a college-centric platform requiring a .edu email address for membership. This structural constraint inherently rendered each university's network a self-contained social system, providing an unprecedented opportunity to study campus social structures in isolation. This invaluable data, which encompasses tens of thousands of students and all their friendship ties alongside select user attributes, was originally provided directly in an anonymized format by Facebook to academic researchers. This data predates the ubiquitous adoption of smartphones and the sophisticated algorithmic feeds characteristic of contemporary social media. Hence it offers a raw and unfiltered record of student connections. Consequently, it serves as a "digital fossil" of early 2000s campus life, reflecting social dynamics before the global proliferation and complex evolution of social media platforms. The significance of this dataset is substantial; it facilitated fascinating research, such as the work by Traud et al. (2012), which showed how attributes like class year and residence differentially shaped network structures across various universities.
+
+Crucially, this dataset no longer exists publicly and has been removed from the internet due to evolving privacy concerns, making such comprehensive network data sharing an uncommon practice today. Our access to this invaluable resource was facilitated through the Wayback Machine: Internet Archive, a digital library that has preserved over 946 billion web pages over time. The original data, stored in .mat files, was subsequently converted to .csv files for more accessible manipulation and analysis, a process executed using Python.
+
+### 3.2 Data Limitations 
+
+This dataset, while comprehensive for its time, has quite a few limitations that must be acknowledged. First, it represents a static, single point in time and does not capture the dynamic evolution of friendships. Second, all user attributes are self-reported and may contain missing or incomplete values (which we must account for in our analysis). Third, as the original authors note, an online network is an imperfect, though valuable, proxy for offline social interactions. Finally, the anonymization of attributes, while necessary for privacy, prevents a direct interpretation of which specific dorms or majors are most central. We can, however, still measure the powerful aggregate effect of sharing these attributes on tie formation.
+
+### 3.4 Analytical Strategies
+
+Our analysis proceeds in three stages. We begin with a descriptive exploratory analysis to establish the baseline characteristics of each network. We then employ community detection algorithms to identify social clusters. Finally, we use Exponential-Family Random Graph Models (ERGMs) as our primary statistical tool to model the underlying social forces that produce the observed network structures.
+
+#### 3.4.1 Network Metrics for Exploratory Analysis 
+
+To gain initial insights into the macro-level structure of each university, we calculate a suite of standard network metrics. These "vital signs" include network size (nodes and edges), density, average degree, global clustering coefficient (transitivity), assortativity by residence and major (homophily), and modularity. These metrics provide a quantitative foundation for comparing the overall connectivity, cohesion, and community organization of each institution, allowing for a preliminary test of our hypotheses.
+
+#### 3.4.2 The ERGM Framework for Modeling 
+
+Our central method is the Exponential-Family Random Graph Model (ERGM), a statistical tool for modeling the fundamental processes that shape network structure. Unlike simpler models that assume friendship ties are independent, ERGMs can account for complex, endogenous network structures, such as the tendency for "friends of a friend to be friends" (transitivity). We will fit a consistently specified ERGM to the networks of Caltech, Cornell and Dartmouth. The model is specified as:
+
+::: {.callout-note appearance="minimal"}
+University_Network \~ edges + nodematch('year') + nodematch('residence') + nodematch('major')
+:::
+
+The coefficients generated by this model for each university constitute its "social genome". They quantify the strength and direction of various social forces.
+
+#### 3.4.3 Community Detection and Alignment Tests
+
+To investigate the meso-level structure of the networks, we first identify social clusters using the Louvain method for community detection. To add statistical rigor to our interpretation of these communities, we then conduct a Chi-squared test. Mirroring a method from the original Traud et al. (2012) study, this test determines if the algorithmically-detected communities show a statistically significant alignment with known user attributes, such as residence or major.
+
+Finally, to add further context to our ERGM results, we conduct targeted subgroup analyses using the Mann-Whitney U Test to compare the distributions of network metrics (e.g., degree centrality) between distinct groups within a single university and Spearman's Rank Correlation to assess the relationship between different measures of node importance (e.g., degree and betweenness centrality
+
+```{r setup, message=FALSE, warning=FALSE }
+#| echo: false
+library(igraph)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(texreg)
+library(ggraph)
+library(gridExtra)
+library(knitr)
+library(kableExtra)
+```
+
+```{r}
+#| label: Data Loading Caltech
+#| echo: false
+#| message: false
+#| warning: false
+
+caltech_adj <- as.matrix(read.csv("Caltech36_adj.csv", header = FALSE, skip = 1))
+
+caltech_node_info <- read.csv("Caltech36_local_info.csv")
+
+caltech_adj[is.na(caltech_adj)] <- 0
+caltech_adj <- (caltech_adj + t(caltech_adj)) / 2
+
+caltech_g <- graph_from_adjacency_matrix(caltech_adj, mode = "undirected", diag = FALSE)
+
+V(caltech_g)$class_year <- caltech_node_info$year
+V(caltech_g)$residence <- caltech_node_info$dorm
+V(caltech_g)$major <- caltech_node_info$major
+V(caltech_g)$high_school <- caltech_node_info$high_school
+```
+
+```{r message=FALSE, warning=FALSE}
+#| label: Data Loading Dartmouth
+#| echo: false
+
+dartmouth_adj <- as.matrix(read.csv("Dartmouth6_adj.csv", header = FALSE, skip = 1))
+
+dartmouth_node_info <- read.csv("Dartmouth6_local_info.csv")
+
+dartmouth_adj[is.na(dartmouth_adj)] <- 0
+dartmouth_adj <- (dartmouth_adj + t(dartmouth_adj)) / 2
+
+dartmouth_g <- graph_from_adjacency_matrix(dartmouth_adj, mode = "undirected", diag = FALSE)
+
+V(dartmouth_g)$class_year   <- dartmouth_node_info$year
+V(dartmouth_g)$residence    <- dartmouth_node_info$dorm
+V(dartmouth_g)$major        <- dartmouth_node_info$major
+V(dartmouth_g)$high_school  <- dartmouth_node_info$high_school
+```
+
+```{r message=FALSE, warning=FALSE}
+#| label: Data Loading Cornell
+#| echo: false
+cornell_adj <- as.matrix(read.csv("Cornell5_adj.csv", header = FALSE, skip = 1))
+cornell_node_info <- read.csv("Cornell5_local_info.csv")
+
+cornell_adj[is.na(cornell_adj)] <- 0
+cornell_adj <- (cornell_adj + t(cornell_adj)) / 2
+
+cornell_g <- graph_from_adjacency_matrix(cornell_adj, mode = "undirected", diag = FALSE)
+
+V(cornell_g)$class_year  <- cornell_node_info$year
+V(cornell_g)$residence    <- cornell_node_info$dorm
+V(cornell_g)$major        <- cornell_node_info$major
+V(cornell_g)$high_school  <- cornell_node_info$high_school
+```
+
+## 4. Result and Discussion
+
+### 4.1 Exploratory Analysis: A Comparison of University Vital Signs
+
+To compare the baseline network structures of Caltech, Dartmouth and cornell, we calculated a set of standard network measures (Table 1) quantifying their size, connectivity, and community structure. The metrics examined quantify the social dynamics of each institution. By evaluating these metrics, we elucidate how institutional characteristics, including size, academic focus, and geographic context, shape social interactions, providing a foundation for subsequent modeling with Exponential-Family Random Graph Models (ERGMs) to further explore each university’s "social genome."
+
+```{r}
+#| label: Vital Signs
+#| echo: false
+#| message: false
+#| warning: false
+
+# Helper function to compute enhanced vital signs for an igraph object
+compute_vital_signs <- function(g, name) {
+  # Ensure largest connected component
+  comp <- igraph::components(g)
+  g_lcc <- induced_subgraph(g, which(comp$membership == which.max(comp$csize)))
+  
+  # Basic metrics
+  nodes <- gorder(g_lcc)
+  edges <- gsize(g_lcc)
+  density <- edge_density(g_lcc)
+  avg_degree <- mean(degree(g_lcc))
+  clustering <- transitivity(g_lcc, type = "global")
+  
+  # Additional metrics
+  # Assortativity for residence and major (homophily)
+  assort_residence <- assortativity(g_lcc, V(g_lcc)$residence, directed = FALSE)
+  assort_major <- assortativity(g_lcc, V(g_lcc)$major, directed = FALSE)
+  
+  # Modularity using Louvain community detection
+  comm_louvain <- cluster_louvain(g_lcc)
+  modularity <- modularity(g_lcc, membership(comm_louvain))
+  
+  avg_path_length <- mean_distance(g_lcc, directed = FALSE, unconnected = TRUE)
+  
+  diameter <- diameter(g_lcc, directed = FALSE)
+  
+  mean_betweenness <- mean(betweenness(g_lcc, directed = FALSE, normalized = TRUE))
+  
+  # Degree centrality variance (connectivity inequality)
+  degree_variance <- var(degree(g_lcc))
+  
+  data.frame(
+    University = name,
+    Nodes = nodes,
+    Edges = edges,
+    Density = density,
+    Avg_Degree = avg_degree,
+    Clustering = clustering,
+    Assort_Residence = assort_residence,
+    Assort_Major = assort_major,
+    Modularity = modularity,
+    Avg_Path_Length = avg_path_length,
+    Diameter = diameter,
+    Mean_Betweenness = mean_betweenness,
+    Degree_Variance = degree_variance
+  )
+}
+
+# --- Generate Table ---
+
+# Calculate vital signs for all three universities
+vital_signs <- rbind(
+  compute_vital_signs(caltech_g, "Caltech"),
+  compute_vital_signs(dartmouth_g, "Dartmouth"),
+  compute_vital_signs(cornell_g, "Cornell") # Added Cornell
+)
+
+# Generate the LaTeX table
+vital_signs %>%
+  kable(format = "latex", booktabs = TRUE, digits = 3,
+        caption = "Vital Network Statistics for Caltech, Dartmouth, and Cornell", # Updated caption
+        col.names = c("University", "Nodes", "Edges", "Density", "Avg Degree",
+                      "Clustering", "Assort Residence", "Assort Major",
+                      "Modularity", "Avg Path Length", "Diameter",
+                      "Mean Betweenness", "Degree Variance")) %>%
+  kable_styling(latex_options = c("hold_position", "striped", "repeat_header", "scale_down"),
+                font_size = 10, # Adjusted font size for three rows
+                position = "center") %>%
+  column_spec(1, bold = TRUE)
+
+```
+
+We first examined node and edge counts to assess network scale. Caltech’s network, with 762 nodes and 16,651 edges, reflects its status as a small, elite technical institute. Dartmouth’s is significantly larger (7,677 nodes, 304,065 edges), while Cornell’s network is massive in comparison, comprising 18,621 nodes and 790,753 edges. This confirms the vast difference in scale between the three institutions and immediately positions Cornell as the sprawling "Metropolis."
+
+Network density, the proportion of actual to possible ties, follows an inverse trend with size. Caltech’s intimate scale yields the highest density (0.057). In contrast, Cornell has the lowest density (0.005), an expected outcome given that the potential number of connections in a network of its size is astronomically large. Despite this sparsity, Cornell’s average degree (84.9) is the highest of the three, just surpassing Dartmouth’s (79.2) and far exceeding Caltech’s (43.7). This reveals a key feature of the "Metropolis": while the probability of any two random students being friends is low, the average student is extremely well-connected, a testament to a vibrant and active social environment with immense opportunities for forming ties.
+
+```{r}
+#| label: Degree Distributions
+#| echo: false
+#| message: false
+#| warning: false
+# degree distributions
+degree_dist <- list(
+  Caltech = degree(caltech_g),
+  Dartmouth = degree(dartmouth_g)
+)
+
+# data frame for plotting
+degree_df <- data.frame(
+  Degree = c(degree_dist$Caltech, degree_dist$Dartmouth),
+  University = rep(c("Caltech", "Dartmouth"), 
+                   times = c(length(degree_dist$Caltech), 
+                             length(degree_dist$Dartmouth)))
+)
+
+degree_plot <- ggplot(degree_df, aes(x = Degree, fill = University)) +
+  geom_histogram(bins = 30, position = "dodge", alpha = 0.7) +
+  scale_x_log10() +
+  scale_y_log10() +
+  labs(title = "Degree Distribution Comparison (Log-Log Scale)",
+       x = "Degree (Number of Friends)", y = "Count (Log Scale)") +
+  scale_fill_manual(values = c("Caltech" = "orange", "Dartmouth" = "#00693e")) +
+  theme_minimal()
+
+ggsave("degree_distribution.png", degree_plot, width = 8, height = 6)
+print(degree_plot)
+```
+
+**Figure 1.** Degree Distribution of Student Social Networks at Caltech and Dartmouth.
+
+The global clustering coefficient, which measures the prevalence of "friend of a friend" triangles, highlights fundamental differences in social cohesion. Caltech’s network is highly clustered (0.291), strongly supporting the "Focused Silo" hypothesis where intense, localized social interactions within its residential House system are paramount. Conversely, Cornell’s network exhibits the lowest clustering (0.136). This is powerful evidence for the "Metropolis" model, suggesting a social structure that is more diffuse, where friendships are less likely to be concentrated in tight-knit local groups and more likely to span across a wider, more diverse social landscape. Dartmouth’s clustering (0.151) is surprisingly low for a "Social Bubble," suggesting that while its community is cohesive, its ties may be more bridging across different social circles (e.g., between Greek houses and sports teams) rather than bonding exclusively within them.
+
+Assortativity, a measure of homophily, reveals the primary drivers of connection. For residence, Cornell shows the strongest tendency for students to connect with others in the same dorm (0.161), even more so than Dartmouth (0.118). This finding suggests that in a massive university, one's immediate living environment becomes a critical anchor for social life out of necessity. For major, however, both Cornell (0.049) and Dartmouth (0.044) show weak homophily, indicating that academic focus is not a primary driver of friendship in these larger, more diverse schools. Caltech’s near-zero assortativity for both major and residence remains a surprising result, suggesting that despite its siloed structure, the small community size may necessitate a high degree of cross-group integration.
+
+Modularity, which measures the strength of community divisions, reinforces the "Metropolis" hypothesis. Cornell has the highest modularity score (0.471), indicating its network is the most clearly and strongly partitioned. This is precisely what one would expect from a large city: it is not a monolithic entity but a collection of many distinct neighborhoods or sub-communities. Dartmouth’s high modularity (0.431) likewise reflects a socially segmented campus, likely driven by its prominent Greek life. Caltech’s slightly lower modularity, in contrast, suggests distinct communities, such as Houses or academic groups, but less sharply defined, possibly due to overlapping ties in a small network.
+
+```{r}
+#| label: Community Detection
+#| echo: false
+#| message: false
+#| warning: false
+# func to sample and plot community detection
+plot_louvain_subgraph <- function(graph, name, subgraph_size = 500) {
+  set.seed(123)  # reproducibility
+
+  # induce subgraph of given size from largest connected component
+  comp <- components(graph)
+  g_lcc <- induced_subgraph(graph, which(comp$membership == which.max(comp$csize)))
+  sampled_nodes <- sample(V(g_lcc), min(subgraph_size, vcount(g_lcc)))
+  g_sub <- induced_subgraph(g_lcc, sampled_nodes)
+
+  # Louvain clustering
+  louvain_comm <- cluster_louvain(g_sub)
+  mod_score <- modularity(louvain_comm)
+
+
+  plot(
+    louvain_comm, g_sub,
+    vertex.label = NA,
+    vertex.size = 5,
+    edge.arrow.size = 0.2,
+  )
+}
+
+par(mfrow = c(1, 2), mar = c(1, 2, 4, 1))  # 1 row, 2 columns
+
+# Caltech (Left)
+plot_louvain_subgraph(caltech_g, "Caltech")
+
+# Dartmouth (Right)
+plot_louvain_subgraph(dartmouth_g, "Dartmouth")
+
+par(mfrow = c(1, 1))
+# Add caption (small font)
+mtext(
+  side = 1,
+  line = 5,
+  cex = 0.7,
+  text = "Figure 1: Louvain community detection on induced subgraphs of Caltech (left) and Dartmouth (right)"
+)
+```
+
+::: {.caption style="font-size: 1 em; text-align: center;"}
+**Figure 2.** Louvain community detection on induced subgraphs of Caltech (left) and Dartmouth (right). Caltech shows moderately cohesive communities whereas Dartmouth exhibits more pronounced clustering.
+:::
+
+Despite its vastness, Cornell remains a "small world." Its average path length (2.876) and diameter (8) are remarkably similar to Dartmouth’s (2.768 and 8, respectively). This indicates a highly efficient network structure where any student can reach another through a very short chain of acquaintances. Furthermore, both Cornell and Dartmouth exhibit mean betweenness centrality near zero. This is characteristic of large, decentralized networks where there are countless paths between individuals, meaning no single person or group is critical for holding the network together. This contrasts with Caltech (0.002), where the slightly higher betweenness suggests a greater role for individuals who act as brokers between its well-defined silos. Finally, degree variance is by far the highest at Cornell (7395.4), suggesting the greatest inequality in social connections, a classic feature of a metropolis that supports both hyper-connected social hubs and more isolated individuals.
+
+In conclusion, these network vital signs paint clear, distinct portraits of three unique social worlds. Caltech is a dense, clustered "Silo." Dartmouth is a highly connected "Social Bubble" with strong residential bonds. And Cornell is a sprawling, fragmented, yet remarkably efficient "Metropolis." These findings provide a robust quantitative baseline for our primary analysis, where we use ERGMs to model the specific social forces that sculpt these fascinatingly different university personalities.
+
+### 4.2 Modeling the Social Genomes: ERGM Coefficient Analysis
+
+Due to limitations in RAM and multithreaded cores on our local machine, we employed an [online Colab Pro notebook](https://colab.research.google.com/drive/1FuaNPwq4hHU_zsZN5EoWepGbBpg1mSg7?usp=sharing) to fit ERGMs (and even load the dataset for Cornell's adjacency matrix). We ran the following code for each university (added here without executing):
+
+```         
+## Load Dartmouth's graph
+
+dartmouth_adj <- as.matrix(read.csv("Dartmouth6_adj.csv", header = FALSE, skip = 1))
+
+dartmouth_node_info <- read.csv("Dartmouth6_local_info.csv")
+
+dartmouth_g <- network(dartmouth_adj, directed = FALSE)
+
+set.vertex.attribute(dartmouth_g, "year", dartmouth_node_info$year)
+set.vertex.attribute(dartmouth_g, "residence", dartmouth_node_info$dorm)
+set.vertex.attribute(dartmouth_g, "major", dartmouth_node_info$major)
+set.vertex.attribute(dartmouth_g, "high_school", dartmouth_node_info$high_school)
+
+dartmouth_model <- ergm(
+  dartmouth_g ~ edges + nodematch("year") + nodematch("residence") +
+    nodematch("major") + nodematch("high_school"),
+  control = control.ergm(
+    parallel = num_cores,
+    parallel.type = "PSOCK",
+    MCMLE.maxit = 100
+  )
+)
+
+summary(dartmouth_model)
+
+dartmouth_p <- plot_model_coefs(dartmouth_model, "Dartmouth")
+
+grid.arrange(dartmouth_p, nrow=1)
+```
+
+and collated the model coefficient graphs into the following:
+
+![ERGM Model Fitting for Caltech, Dartmouth and Cornell. (IMG_6279.png) ](images/IMG_6279.png){alt="ERGM Model Fitting for Caltech, Dartmouth and Cornell." width="500"}
+
+Each point on the graph represents the strength and direction of a particular "social gene," such as the tendency to form ties based on shared residence or major. A positive coefficient, located to the right of the zero line, indicates that the attribute actively promotes friendship formation (homophily), while the distance from zero signifies the strength of that effect. By comparing these plots, we can immediately see which forces are dominant at each institution and the confidence intervals confirm whether these observed effects are statistically significant.
+
+#### 4.2.1 Caltech: "The Focused Silo"
+
+The estimated edges coefficient for Caltech is Approximately -2.5, indicating a low baseline probability of tie formation, consistent with a smaller, more structured network. nodematch('year'): Around 0.5, a modest positive effect, suggesting some tendency for students in the same class year to connect. nodematch('residence'): Around 1.0, a strong positive coefficient, indicating a significant tendency for students in the same residential house to form ties. nodematch('major'): Around 0.8, a positive coefficient, showing a notable tendency for students with the same major to connect. nodematch('high_school'): Near 0, suggesting little to no effect of shared high school on tie formation.
+
+The hypothesis for Caltech is largely supported. The strong positive nodematch('residence') coefficient (1.0) confirms that the university's famous residential house system is a key organizing principle, aligning with the "Focused Silo" idea where social life is tightly structured around housing communities. The positive nodematch('major') coefficient (0.8) also supports the hypothesis, reflecting Caltech’s academic focus and the tendency for students in the same major to form ties, likely due to shared classes and projects.
+
+#### 4.2.2 Dartmouth: "The Social Bubble"
+
+The estimated edges coefficient for Dartmouth College is -3.5, which is more negative than Caltech’s, indicating a lower baseline probability of tie formation despite the larger network size. nodematch('year'): Around 0.8, a positive effect, showing a tendency for students in the same class year to connect. nodematch('residence'): Around 1.2, the highest among the three universities, indicating a very strong tendency for students in the same residence (including Greek houses) to form ties. nodematch('major'): Around 0.3, a modest positive effect, suggesting a weaker role for shared majors in tie formation. nodematch('high_school'): Around 0.5, a moderate positive effect, indicating some influence of shared high school on connections.
+
+The hypothesis for Dartmouth is strongly supported. The nodematch('residence') coefficient (1.2) is the highest across all universities, confirming that residential and Greek life are dominant drivers of social connections, aligning with the "Social Bubble" hypothesis. The less negative edges coefficient compared to Cornell (-3.5 vs. -4.0) supports the idea of a higher baseline density, though it’s still more negative than Caltech’s, likely due to Dartmouth’s larger size (7,677 nodes vs. Caltech’s 762). The moderate nodematch('high_school') effect (0.5) suggests that shared high school experiences, possibly reinforced by geographic isolation, play a role in tie formation, which wasn’t predicted but makes sense for a cohesive, isolated community.
+
+#### 4.2.3 Cornell: "The Metropolis"
+
+The estimated edges coefficient for Cornell University is around -4.0, the most negative, indicating the lowest baseline probability of tie formation, consistent with a large, diverse network. nodematch('year'): Around 1.0, the highest among the three universities, showing a strong tendency for students in the same class year to connect. nodematch('residence'): Around 0.5, a modest positive effect, suggesting a weaker role for residence in tie formation. nodematch('major'): Around 0.2, a very weak positive effect, indicating minimal influence of shared majors. nodematch('high_school'): Near 0, suggesting little effect of shared high school on connections.
+
+The hypothesis for Cornell is fully supported. The strong nodematch('year') coefficient (1.0) confirms that class year is the dominant organizing principle, aligning with the "Metropolis" hypothesis where Cornell’s large size (likely tens of thousands of nodes) and diversity lead to cohort-based connections, possibly due to shared academic schedules and events. The weaker nodematch('residence') (0.5) and nodematch('major') (0.2) coefficients support the idea of diffuse connections, as residence and major play less significant roles in a large, heterogeneous network. The very negative edges coefficient (-4.0) reflects the challenge of forming ties in a large network, where students are less likely to connect randomly.
+
+### 4.3 Comparison with Prior Work and Coefficient Validation
+
+The high nodematch('residence') coefficient (1.0) for Caltech suggests a robust housing community, likely due to its unique House system, which promotes close-knit interactions. This aligns with the network’s high clustering coefficient (0.291) and density (0.057), indicating that students within the same House form dense, localized groups. The smaller network size (762 nodes) likely amplifies this effect, as students have fewer options for social interaction outside their Houses, reinforcing the "Focused Silo" structure.
+
+Dartmouth’s nodematch('residence') coefficient (1.2) is the highest, reflecting the significant role of residential and Greek life in shaping social ties. This is consistent with the high residence assortativity (0.118) and modularity (0.440) from Table 1, suggesting that Greek houses create distinct, cohesive communities. The moderate nodematch('high_school') effect (0.5) may indicate that students from the same high school are drawn to similar Greek houses, further strengthening these ties in a geographically isolated setting.
+
+The nodematch('high_school') term shows variation across universities. Dartmouth’s moderate effect (0.5) suggests that shared high school origins play a role, possibly because geographic isolation leads to regional clustering of students. In contrast, Caltech and Cornell show near-zero effects (around 0), likely because their student bodies are more geographically diverse, and high school ties are less relevant in shaping university friendships, as noted in Traud et al. (2012).
+
+The edges coefficients reflect the impact of network size on tie formation. Caltech’s less negative value (-2.5) compared to Dartmouth (-3.5) and Cornell (-4.0) aligns with its smaller size, where random connections are more likely. Dartmouth’s value, though more negative than Caltech’s, supports the "Social Bubble" hypothesis of higher density, while Cornell’s very negative value reflects the diffuse nature of a large network.
+
+While Caltech shows a notable nodematch('major') effect (0.8), both Dartmouth (0.3) and Cornell (0.2) have weaker effects than expected. This suggests that academic majors are less central to social tie formation than anticipated, possibly because social interactions are more driven by residential or cohort-based factors. For Dartmouth, this aligns with the lower major assortativity (0.044), indicating a social focus over an academic one.
+
+#### 4.4 Model Validation and Robustness Checks
+
+To ensure the validity of our findings, we conducted two additional analyses: a deeper model specification for the Caltech network and a sensitivity analysis for the Dartmouth network.
+
+#### 4.4.1 A Deeper Dive into Caltech: Modeling Transitivity (gwesp) and Goodness-of-Fit
+
+#### 4.4.2 Dartmouth Network Sensitivity Analysis
+
+Undergraduate-Only Analysis: We filter the network to include only students with class years 2005 through 2009. This tests if the inclusion of potential graduate students, faculty, or alumni was affecting the results.
+
+If the "Social Bubble" characteristics (like high residence assortativity or strong ERGM coefficients for residence) become even stronger in these core networks, your argument becomes much more powerful.
+
+```{r}
+#| label: dartmouth-sensitivity-vital-signs
+#| echo: false
+#| message: false
+#| warning: false
+
+# --- Create Undergraduate Subgraph (2005–2009) and Extract LCC ---
+undergrad_nodes <- V(dartmouth_g)[V(dartmouth_g)$class_year %in% 2005:2009]
+dartmouth_ug_g <- induced_subgraph(dartmouth_g, undergrad_nodes)
+
+components_ug <- components(dartmouth_ug_g)
+ug_lcc_nodes <- which(components_ug$membership == which.max(components_ug$csize))
+dartmouth_ug_lcc_g <- induced_subgraph(dartmouth_ug_g, ug_lcc_nodes)
+
+# --- Compute Network Vital Signs ---
+vital_signs_sensitivity <- rbind(
+  compute_vital_signs(dartmouth_g, "Dartmouth (Original)"),
+  compute_vital_signs(dartmouth_ug_lcc_g, "Dartmouth (Undergrad LCC)")
+)
+
+# --- Generate a compact LaTeX table ---
+knitr::kable(
+  vital_signs_sensitivity,
+  format = "latex",
+  booktabs = TRUE,
+  digits = 3,
+  caption = "Dartmouth Network Vital Signs Sensitivity Analysis",
+  col.names = c("Network Version", "Nodes", "Edges", "Density", "Avg Degree",
+                "Clustering", "Assort Residence", "Assort Major", "Modularity",
+                "Avg Path Length", "Diameter", "Mean Betweenness", "Degree Variance")
+) %>%
+  kableExtra::kable_styling(latex_options = c("hold_position", "scale_down"), font_size = 6)
+```
+
+### 4.5 Subgroup Analysis: Exploring Class Year Dynamics in Dartmouth’s Social Network
+
+One of the core questions in understanding a university’s social structure is whether students tend to cluster based on shared attributes such as class year. Dartmouth presents an interesting case: unlike many institutions where students are referred to as freshmen, sophomores, juniors, or seniors, Dartmouth students identify by their graduating class year (e.g., “’08s” or “’05s”). This reflects a strong cohort identity that runs deeper than academic classification. This sentiment is shaped by shared experiences unique to Dartmouth: walking around the Homecoming bonfire together as first-years, returning for Sophomore Summer while most of campus is away, and going through Greek rush during sophomore fall.
+
+This analysis investigates whether class year influences social connectivity at Dartmouth by comparing students in the Class of 2008 and the Class of 2005. Using degree centrality as a proxy for social embeddedness within the campus Facebook network, we explore whether students’ academic class year corresponds to differences in social ties.
+
+```{r}
+#| label: Subgroup Analysis
+#| echo: false
+#| message: false
+#| warning: false
+
+# Step 1: Define subgroups (Freshmen = 2008, Seniors = 2005)
+dartmouth_node_info <- dartmouth_node_info %>%
+  mutate(year_group = case_when(
+    year == 2008 ~ "Freshmen",
+    year == 2005 ~ "Seniors",
+    TRUE ~ NA_character_
+  )) %>%
+  filter(!is.na(year_group))
+
+# Step 2: Compute degree centrality (assuming order matches graph)
+degrees <- degree(dartmouth_g)
+dartmouth_node_info$degree <- degrees[1:nrow(dartmouth_node_info)]
+
+# Step 3: Mann-Whitney U test
+freshmen_degrees <- dartmouth_node_info$degree[dartmouth_node_info$year_group == "Freshmen"]
+senior_degrees <- dartmouth_node_info$degree[dartmouth_node_info$year_group == "Seniors"]
+mw_test <- wilcox.test(freshmen_degrees, senior_degrees, alternative = "two.sided")
+
+# Extract test results
+mw_statistic <- mw_test$statistic
+mw_pvalue <- mw_test$p.value
+
+# Step 4: Create boxplot
+boxplot <- ggplot(dartmouth_node_info, aes(x = year_group, y = degree, fill = year_group)) +
+  geom_boxplot(alpha = 0.7) +
+  scale_fill_manual(values = c("Freshmen" = "brown", "Seniors" = "navy")) +
+  labs(title = "Degree Centrality by Class Year at Dartmouth",
+       subtitle = paste0("Mann–Whitney U = ", mw_statistic, ", p = ", signif(mw_pvalue, 3)),
+       x = "Class Year", y = "Degree Centrality (Number of Friends)") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+# Save and display plot
+ggsave("dartmouth_classyear_boxplot.png", boxplot, width = 6, height = 4)
+print(boxplot)
+
+# Step 5: Summary statistics table
+summary_stats <- dartmouth_node_info %>%
+  group_by(year_group) %>%
+  summarise(
+    N = n(),
+    Median_Degree = median(degree, na.rm = TRUE),
+    Mean_Degree = mean(degree, na.rm = TRUE),
+    SD_Degree = sd(degree, na.rm = TRUE)
+  )
+
+kable(summary_stats, format = "latex", booktabs = TRUE, digits = 2,
+      caption = "Summary Statistics for Degree Centrality by Class Year at Dartmouth",
+      col.names = c("Class Year", "N", "Median Degree", "Mean Degree", "SD Degree")) %>%
+  kable_styling(latex_options = c("hold_position", "striped"), font_size = 11)
+```
+
+**Figure 3.** Comparison of degree centrality, measured as the number of social connections within the Dartmouth Facebook network, between students in the Class of 2008 (First-Years) and the Class of 2005 (Seniors).
+
+The boxplot shows that Seniors have a slightly higher median degree (66 vs. 59), and the means are nearly identical (79.57 vs. 77.71). However, the distributions have significant overlap, and both groups exhibit considerable spread and numerous outliers, suggesting variability in individual connectedness.
+
+A Mann–Whitney U test was used to compare the degree distributions and yielded a non-significant result (U = 525388.5, p = 0.168). This means that there is no statistically significant difference in degree centrality between Freshmen and Seniors in this sample.
+
+The distributions of both groups reveal considerable overlap and multiple high-degree outliers, suggesting that social connectedness is not strongly stratified by class year at Dartmouth. This pattern may reflect Dartmouth’s relatively close knit environment, where cross-cohort interaction is common. It may also indicate that social networks mature quickly and plateau early, meaning even first-year students can become highly connected soon after arrival.
+
+However, it is important to note that this analysis is univariate, meaning we did not control for other potentially influential variables such as dorm assignment, gender, or academic major. These factors likely interact with class year in shaping students’ social networks, and a multivariate analysis could provide a more nuanced understanding.
+
+These findings contribute to the broader goal of this project: to quantify institutional “social genomes.” The lack of a sharp divide by class year at Dartmouth stands in contrast to other institutions where hierarchical or cohort-based segmentation may play a larger role.
+
+## 5. Conclusion
+
+### 5.1 Limitations of the Model and Analysis
+
+Several limitations warrant mention. Our ERGM analysis is cross-sectional, meaning it captures a single snapshot in time and cannot formally disentangle the processes of social selection (choosing friends who are like you) from social influence (becoming more like your friends over time). A longitudinal analysis would be required to address such questions of causality. Furthermore, our model relies on a specified set of attributes; other unobserved factors, such as participation in clubs, sports, or artistic groups, undoubtedly also play a significant role in shaping these networks. Finally, as with any statistical model, our ERGM is a simplification of a complex reality, and the "social genome" it describes should be understood as a powerful but incomplete representation of a university's social life.
+
+### 5.2 Future Directions
+
+This study could be expanded in several ways. Applying the "social genome" model to all 100 universities in the dataset would allow for a large-scale clustering of institutions based on their social signatures. The dataset's primary limitation is its static nature; a future study would involve analyzing a longitudinal dataset to observe how a university's social genome evolves over a student's four-year career or in response to institutional changes, such as the construction of new residential colleges. Furthermore, obtaining "better" data with more detailed, non-anonymized attributes (e.g., specific fraternity/sorority membership) would allow for an even more fine-grained model of the forces shaping campus social life, and thereby help incoming college students design a more intentional and fulfilling college experience by choosing institutions whose social personalities align with their own.
+
+## 6. References
+
+Hommes, J., Rienties, B., de-Vries, P., & van-den-Bossche, P. (2012). The impact of social networks on the development of student’s academic life and performance. Procedia-Social and Behavioral Sciences, 55, 878-887.
+
+Lewis, K., Gonzalez, M., & Kaufman, J. (2012). Social selection and peer influence in an online social network. Proceedings of the National Academy of Sciences, 109(1), 68-72.
+
+Lusher, D., Koskinen, J., & Robins, G. (Eds.). (2013). Exponential random graph models for social networks: Theory, methods, and applications. Cambridge University Press.
+
+McPherson, M., Smith-Lovin, L., & Cook, J. M. (2001). Birds of a Feather: Homophily in Social Networks. Annual Review of Sociology, 27, 415-444.
+
+Traud, A. L., Mucha, P. J., & Porter, M. A. (2012). Social structure of Facebook networks. Physica A: Statistical Mechanics and its Applications, 391(16), 4165–4180.
+
+Wimmer, A., & Lewis, K. (2010). Beyond and Below Racial Homophily: ERG Models of a Friendship Network in a Racially Diverse Dorm. American Journal of Sociology, 116(2), 583-642.
+
+## 7. Appendix 
